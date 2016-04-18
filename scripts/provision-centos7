@@ -13,8 +13,13 @@ systemctl enable postgresql-9.5
 systemctl start postgresql-9.5
 
 echo "Provisioning Go"
-curl -sOL https://storage.googleapis.com/golang/go1.6.1.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.6.1.linux-amd64.tar.gz
+if ! [[ -x /usr/local/go/bin/go ]]
+then
+  curl -sOL https://storage.googleapis.com/golang/go1.6.1.linux-amd64.tar.gz
+  tar -C /usr/local -xzf go1.6.1.linux-amd64.tar.gz
+fi
 
-su - vagrant -c '/bin/bash "chmod +x /home/vagrant/bin/bootstrap-projects ; /home/vagrant/bin/bootstrap-projects'
+chown vagrant /bootstrap-projects
+
+su - vagrant -c '/bootstrap-projects'
 
