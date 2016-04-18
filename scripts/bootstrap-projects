@@ -12,11 +12,11 @@ do go get github.com/hashicorp/${project}
 done
 
 pushd ~/go/src/github.com/hashicorp/consul
-make dev test build
+make dev build
 popd
 
 pushd ~/go/src/github.com/hashicorp/vault
-make dev test build
+make dev build
 popd
 
 [[ -s "${HOME}/consul/key" ]] ||
