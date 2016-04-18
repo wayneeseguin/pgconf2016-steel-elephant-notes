@@ -18,8 +18,8 @@ do {
     config.ssh.shell = "bash"
 		config.vm.network "private_network", ip: "10.11.11.7${index}"
 
+    config.vm.provision "file", source: "../scripts/bootstrap-projects", destination: "/tmp/bootstrap-projects"
     config.vm.provision :shell, :path => "../scripts/provision-centos7"
-    config.vm.provision "file", source: "../scripts/bootstrap-projects", destination: "/bootstrap-projects"
 
     config.vm.provider :virtualbox do |v|
         v.name = "centos7-pg-${index}"

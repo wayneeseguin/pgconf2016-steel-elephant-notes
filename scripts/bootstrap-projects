@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 
+export PATH="${PATH}:/usr/local/go/bin"
 export GOPATH="${HOME}/go"
+
+mkdir -p "${GOPATH}"/{src,bin,pkg}
 
 for project in consul vault
 do
-  go get -u https://github.com/hashicorp/${project}.git
+  go get github.com/hashicorp/${project}
   pushd ~/go/src/github.com/hashicorp/${project}
   make dev
   make tools
@@ -66,9 +69,13 @@ EOF
 
 chmod 0755 ~/bin/run-consul
 
+if ! grep -q CONSUL_RPC_ADDR ~/.bash_profile
+then
+  cat >> ~/.bash_profile <<-EOF
+export CONSUL_RPC_ADDR=/tmp/.consul.rpc.sock
+export CONSUL_HTTP_ADDR=/tmp/.consul.http.sock
+EOF
+fi
+
 ~/bin/run-consul
 
-cat >> ~/.bash_profile <<-EOF
-setenv CONSUL_RPC_ADDR /tmp/.consul.rpc.sock
-setenv CONSUL_HTTP_ADDR /tmp/.consul.http.sock
-EOF

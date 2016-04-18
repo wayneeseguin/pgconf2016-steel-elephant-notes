@@ -19,7 +19,11 @@ then
   tar -C /usr/local -xzf go1.6.1.linux-amd64.tar.gz
 fi
 
-chown vagrant /bootstrap-projects
+echo "Bootstrapping Projects as vagrant user"
+mkdir -p /home/vagrant/bin
+mv /tmp/bootstrap-projects /home/vagrant/bin/bootstrap-projects
+chmod +x /home/vagrant/bin/bootstrap-projects
+chown -R vagrant /home/vagrant/bin
 
-su - vagrant -c '/bootstrap-projects'
+su - vagrant -c '/home/vagrant/bin/bootstrap-projects'
 
