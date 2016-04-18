@@ -5,6 +5,8 @@ export GOPATH="${HOME}/go"
 
 mkdir -p "${GOPATH}"/{src,bin,pkg}
 
+go get github.com/mitchellh/gox
+
 for project in consul vault
 do
   go get github.com/hashicorp/${project}
