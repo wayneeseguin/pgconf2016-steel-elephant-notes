@@ -18,6 +18,7 @@ do {
     config.ssh.shell = "bash"
 		config.vm.network "private_network", ip: "10.11.11.7${index}"
 
+    config.vm.provision :shell, inline: "echo '10.11.11.7${index}' > /tmp/ip"
     config.vm.provision "file", source: "../scripts/bootstrap-projects", destination: "/tmp/bootstrap-projects"
     config.vm.provision :shell, :path => "../scripts/provision-centos7"
 

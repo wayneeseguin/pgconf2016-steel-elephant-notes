@@ -8,16 +8,12 @@ mkdir -p "${GOPATH}"/{src,bin,pkg}
 go install github.com/mitchellh/gox
 
 for project in consul vault
-do go get github.com/hashicorp/${project}
+do 
+  go get github.com/hashicorp/${project}
+  pushd ~/go/src/github.com/hashicorp/${project}
+  [[ -x ~/go/src/github.com/hashicorp/${project}/bin/${project} ]] || make dev
+  popd
 done
-
-pushd ~/go/src/github.com/hashicorp/consul
-make dev build
-popd
-
-pushd ~/go/src/github.com/hashicorp/vault
-make dev build
-popd
 
 [[ -s "${HOME}/consul/key" ]] ||
   "${GOPATH}/bin/consul" keygen > "${HOME}/consul/key"
@@ -50,7 +46,7 @@ cat > ~/consul/config.json <<EOF
             "stable-service": "86400s"
         }
     },
-    "encrypt": "$(cat "${HOME}/consul/key")",
+    "encrypt": "$(cat "${HOME}/consul/key" # this should be shared one not unique to all)",
     "log_level": "debug",
     "ports": {
         "https": -1
@@ -66,13 +62,22 @@ cat > ~/bin/run-consul <<EOF
 #!/bin/bash
 
 set -e
-exec 2>&1
-exec /usr/bin/env -i "${GOPATH}/bin/consul" agent \
-    -config-file=~/consul/config.json \
-    -config-dir=~/consul/conf.d/
+
+exec &>~/consul/agent.log
+
+(exec /usr/bin/env -i ~/go/src/github.com/hashicorp/consul/bin/consul agent \
+  -config-file=\$HOME/consul/config.json \
+  -config-dir=\$HOME/consul/conf.d/ \
+  -bind=$(cat /tmp/ip) \
+  -retry-join=10.11.11.71 )&
+
+exit 0
+
 EOF
 
 chmod 0755 ~/bin/run-consul
+
+~/bin/run-consul
 
 if ! grep -q GOROOT ~/.bash_profile
 then
@@ -85,5 +90,21 @@ export CONSUL_HTTP_ADDR=/tmp/.consul.http.sock
 EOF
 fi
 
-~/bin/run-consul
+echo "Configuring Vault"
+export CONSUL_RPC_ADDR=/tmp/.consul.rpc.sock
+export CONSUL_HTTP_ADDR=/tmp/.consul.http.sock
+
+#curl --unix-socket ${CONSUL_HTTP_ADDR} -H "X-Consul-Token: ${masterToken}" -X PUT -d '{"Name": "Vault Master}'
+
+#cat ~/vault/config.hcl
+#...
+
+#vault server -config=$HOME/vault/config.hcl
+#export VAULT_ADDR=http://127.0.0.1:8200
+
+#vault init -key-shares=1 -key-threshold=1
+# Init vault with console for development. 
+# Can  do -dev to setup in-memory store without consul even.
+
+
 
