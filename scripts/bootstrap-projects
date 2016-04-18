@@ -1,20 +1,23 @@
 #!/usr/bin/env bash
 
-export PATH="${PATH}:/usr/local/go/bin"
+export PATH="${PATH}:/usr/local/go/bin:${HOME}/go/bin"
 export GOPATH="${HOME}/go"
 
 mkdir -p "${GOPATH}"/{src,bin,pkg}
 
-go get github.com/mitchellh/gox
+go install github.com/mitchellh/gox
 
 for project in consul vault
-do
-  go get github.com/hashicorp/${project}
-  pushd ~/go/src/github.com/hashicorp/${project}
-  make dev
-  make tools
-  popd
+do go get github.com/hashicorp/${project}
 done
+
+pushd ~/go/src/github.com/hashicorp/consul
+make dev test build
+popd
+
+pushd ~/go/src/github.com/hashicorp/vault
+make dev test build
+popd
 
 [[ -s "${HOME}/consul/key" ]] ||
   "${GOPATH}/bin/consul" keygen > "${HOME}/consul/key"
@@ -71,9 +74,12 @@ EOF
 
 chmod 0755 ~/bin/run-consul
 
-if ! grep -q CONSUL_RPC_ADDR ~/.bash_profile
+if ! grep -q GOROOT ~/.bash_profile
 then
   cat >> ~/.bash_profile <<-EOF
+export PATH="\${PATH}:/usr/local/go/bin:\${HOME}/go/bin"
+export GOPATH="\${HOME}/go"
+
 export CONSUL_RPC_ADDR=/tmp/.consul.rpc.sock
 export CONSUL_HTTP_ADDR=/tmp/.consul.http.sock
 EOF
