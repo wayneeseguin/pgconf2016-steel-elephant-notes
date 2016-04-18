@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+export GOPATH="${HOME}/go"
+
+for project in consul vault
+do
+  go get -u https://github.com/hashicorp/${project}.git
+  pushd ~/go/src/github.com/hashicorp/${project}
+  make dev
+  make tools
+  popd
+done
+
+[[ -s "${HOME}/consul/key" ]] ||
+  "${GOPATH}/bin/consul" keygen > "${HOME}/consul/key"
+
+mkdir -p ~/bin ~/consul/conf.d
+
+masterToken="MasterTokenGoesHereWeeeee"
+
+cat > ~/consul/config.json <<EOF 
+{
+    "acl_datacenter": "lab1",
+    "acl_default_policy": "deny",
+    "acl_master_token": "${masterToken}",
+    "addresses": {
+        "dns": "0.0.0.0",
+        "http": "unix:///tmp/.consul.http.sock",
+        "https": "0.0.0.0",
+        "rpc": "unix:///tmp/.consul.rpc.sock"
+    },
+    "bootstrap_expect": 3,
+    "datacenter": "lab1",
+    "data_dir": "${HOME}/consul/data",
+    "disable_remote_exec": true,
+    "dns_config": {
+        "allow_stale": true,
+        "max_stale": "10080m",
+        "node_ttl": "60s",
+        "service_ttl": {
+            "*": "5s",
+            "stable-service": "86400s"
+        }
+    },
+    "encrypt": "$(cat "${HOME}/consul/key")",
+    "log_level": "debug",
+    "ports": {
+        "https": -1
+    },
+    "server": true,
+    "unix_sockets": {
+        "mode": "0700"
+    }
+}
+EOF
+
+cat > ~/bin/run-consul <<EOF 
+#!/bin/bash
+
+set -e
+exec 2>&1
+exec /usr/bin/env -i "${GOPATH}/bin/consul" agent \
+    -config-file=~/consul/config.json \
+    -config-dir=~/consul/conf.d/
+EOF
+
+chmod 0755 ~/bin/run-consul
+
+~/bin/run-consul
+
+cat >> ~/.bash_profile <<-EOF
+setenv CONSUL_RPC_ADDR /tmp/.consul.rpc.sock
+setenv CONSUL_HTTP_ADDR /tmp/.consul.http.sock
+EOF

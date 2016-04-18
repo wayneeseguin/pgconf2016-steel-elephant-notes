@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+echo "Provisioning PostgreSQL"
+rpm -iUvh http://yum.postgresql.org/9.5/redhat/rhel-7-x86_64/pgdg-centos95-9.5-2.noarch.rpm
+yum -y update
+
+yum install -y postgresql95 postgresql95-server postgresql95-contrib postgresql95-libs git
+/usr/pgsql-9.5/bin/postgresql95-setup initdb
+
+sed -i.bak -e "s#^.*listen_addresses.*#listen_addresses='*'#" -e "s#^.*port.*#port=5432#" /var/lib/pgsql/9.5/data/postgresql.conf
+
+systemctl enable postgresql-9.5
+systemctl start postgresql-9.5
+
+echo "Provisioning Go"
+curl -sOL https://storage.googleapis.com/golang/go1.6.1.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.6.1.linux-amd64.tar.gz
+
+su - vagrant -c '/bin/bash "chmod +x /home/vagrant/bin/bootstrap-projects ; /home/vagrant/bin/bootstrap-projects'
+

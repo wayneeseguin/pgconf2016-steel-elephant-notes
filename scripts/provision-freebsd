@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+portsnap alfred
+pkg install -y postgresql95-server postgresql95-client bash go git curl
+echo /usr/local/bin/bash >> /etc/shells
+chsh -s /usr/local/bin/bash
+sysrc postgresql_enable=yes
+service postgresql initdb
+sed -i.bak -e "s#^.*listen_addresses.*#listen_addresses='*'#" -e "s#^.*port.*#port=5432#" /usr/local/pgsql/data/postgresql.conf
+service postgresql start
+sockstat -l4 | grep post
