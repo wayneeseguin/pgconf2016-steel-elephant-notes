@@ -6,7 +6,7 @@ cd pgconf2016-steel-elephant-notes
 
 Let's pre-add the vagrant box we'll be using so that we can stand them up in parallel,
 ```sh
-vagrant up
+./bootstrap
 ```
 You'll have 3 directories `centos7-pg-{{N}}` that you can cd into and `vagrant ssh` to.
 It will have a golang environment setup with consul & vault cloned and built for 

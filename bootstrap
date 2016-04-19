@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+log() { echo "$*"; }
+
+parallel_provision() {
+  for index in {1..3}
+  do
+    log "Provisioning 'centos-pg-${index}'. Output will be in: centos-pg-${index}.log"
+    {
+      if ! vagrant provision centos-pg-${index} &> centos-pg-${index}.log 
+      then log "ERORR: Provisioning centos-pg-${index}: $?"
+      fi
+    } &
+  done
+  wait
+}
+
+main() {
+  vagrant up --no-provision # start boxes sequentially
+  parallel_provision # Provision in parallel
+}
+
+main
