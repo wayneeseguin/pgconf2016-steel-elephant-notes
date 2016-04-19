@@ -21,7 +21,7 @@ Recommended that you use `tmux` or `screen` to manage this task.
 
 If you want to go the freebsd route, modify a few things in the Vagrantfile and use,
 ```sh
-export BOX=freebsd/FreeBSD-11.0-CURRENT SSH_SHELL=sh PROVISION_SCRIPT="../scripts/provision-freebsd"
+export BOX=freebsd/FreeBSD-11.0-CURRENT SSH_SHELL=sh PROVISION_SCRIPT="./scripts/provision-freebsd"
 vagrant up
 vagrant ssh
 ```

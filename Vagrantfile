@@ -6,7 +6,7 @@ Mac = %x{printf '00602F%02X%02X%02X' 249 145 115}
 Box = ENV["BOX"] ? ENV["BOX"] : "geerlingguy/centos7" # or "freebsd/FreeBSD-11.0-CURRENT"
 Network = "10.11.11."
 Boxes = 3
-ProvisionScript= ENV["PROVISION_SCRIPT"] ? ENV["PROVISION_SCRIPT"] : "../scripts/provision-centos7"
+ProvisionScript= ENV["PROVISION_SCRIPT"] ? ENV["PROVISION_SCRIPT"] : "./scripts/provision-centos7"
 SSHShell = ENV["SSH_SHELL"] ? ENV["SSH_SHELL"] : "bash"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -19,7 +19,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		  config.ssh.shell = SSHShell
 		  config.vm.network "private_network", ip: ip
 		  config.vm.provision :shell, inline: "echo '#{ip}' > /tmp/ip"
-		  config.vm.provision "file", source: "../scripts/bootstrap-projects", destination: "/tmp/bootstrap-projects"
+		  config.vm.provision "file", source: "./scripts/bootstrap-projects", destination: "/tmp/bootstrap-projects"
 		  config.vm.provision :shell, :path => ProvisionScript
 		end
 	end
